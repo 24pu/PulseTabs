@@ -59,6 +59,10 @@
 </style>
 
     <?php $this->header(); ?>
+     <!-- 统计代码 -->
+    <?php if ($this->options->analyticsCode): ?>
+        <?php echo $this->options->analyticsCode; ?>
+    <?php endif; ?>
 </head>
 <body class="bg-white text-dark">
 

@@ -35,6 +35,10 @@ function themeConfig($form)
 
     $socialTwitter = new Text('socialTwitter', NULL, NULL, _t('Twitter'), _t('Twitter 主页链接'));
     $form->addInput($socialTwitter);
+
+    // 统计代码（新增）
+    $analyticsCode = new Textarea('analyticsCode', NULL, NULL, _t('统计代码'), _t('输入统计 JS 代码，如 Google Analytics、百度统计等，将自动添加到页面 </head> 之前。'));
+    $form->addInput($analyticsCode);
 }
 
 
