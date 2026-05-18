@@ -87,39 +87,55 @@
 
             <!-- 桌面端导航 + 用户状态（后端实现） -->
             <div class="hidden md:flex items-center space-x-8">
-                <nav class="flex space-x-8">
-                    <a href="<?php $this->options->siteUrl(); ?>" class="<?php if($this->is('index')) echo 'text-dark border-b-2 border-accent pb-0.5'; else echo 'text-gray-600 hover:text-accent'; ?> font-medium transition">首页</a>
-                    <?php $this->widget('Widget_Contents_Page_List')->to($pages); ?>
-                    <?php while($pages->next()): ?>
-                        <a href="<?php $pages->permalink(); ?>" class="text-gray-600 hover:text-accent transition"><?php $pages->title(); ?></a>
-                    <?php endwhile; ?>
-                </nav>
+               <nav class="flex space-x-8">
+                <a href="<?php $this->options->siteUrl(); ?>" class="<?php echo get_nav_class('index', null, false); ?> transition">
+                    首页
+                </a>
+                <?php $this->widget('Widget_Contents_Page_List')->to($pages); ?>
+                <?php while($pages->next()): ?>
+                    <a href="<?php $pages->permalink(); ?>" class="<?php echo get_nav_class('page', $pages->slug, false); ?> transition">
+                        <?php $pages->title(); ?>
+                    </a>
+                <?php endwhile; ?>
+            </nav>
 
-                <!-- 用户状态区域（后端渲染） -->
+               <!-- 用户状态区域（后端渲染） -->
                 <div class="relative" id="userContainer">
                     <?php if($this->user->hasLogin()): ?>
                         <!-- 已登录状态 -->
                         <div id="userTrigger" class="flex items-center gap-2 bg-gray-100 rounded-full pl-2 pr-3 py-1 cursor-pointer hover:bg-gray-200 transition">
-                           <?php $email = $this->user->mail; ?>
+                            <?php $email = $this->user->mail; ?>
                             <img src="<?php echo getGravatar($email, 48); ?>" class="w-9 h-9 rounded-full mr-2">
                             <span class="text-dark font-medium text-sm"><?php $this->user->screenName(); ?></span>
                             <i class="fas fa-chevron-down text-xs text-gray-500"></i>
                         </div>
                         <!-- 下拉菜单 -->
                         <div id="userDropdown" class="user-dropdown absolute right-0 mt-2 w-36 bg-white border border-gray-200 rounded-lg shadow-lg py-1 hidden z-50">
-                            <!-- 在用户下拉菜单中添加 -->
                             <a href="<?php $this->options->siteUrl(); ?>dashboard" class="block px-4 py-2 text-sm text-gray-700 hover:bg-accent/10 hover:text-accent transition">
-                            <i class="fas fa-tachometer-alt mr-2"></i> 用户中心
-                        </a>
+                                <i class="fas fa-tachometer-alt mr-2"></i> 用户中心
+                            </a>
                             <a href="<?php $this->options->adminUrl(); ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-accent/10 hover:text-accent transition">进入后台</a>
                             <a href="<?php $this->options->logoutUrl(); ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-accent/10 hover:text-accent transition">退出登录</a>
                         </div>
                     <?php else: ?>
-                        <!-- 未登录状态 -->
-                        <a href="<?php $this->options->adminUrl('login.php'); ?>" class="inline-flex items-center px-4 py-2 rounded-full bg-accent text-white text-sm font-semibold hover:bg-accent-dark transition">
+                    <?php 
+                    $currentPath = $this->request->getPathInfo();
+                    $isLoginPage = ($currentPath === '/login');
+                    $isRegisterPage = ($currentPath === '/register');
+                    ?>
+                    <div class="flex items-center space-x-3">
+                        <a href="<?php $this->options->siteUrl(); ?>login" 
+                        class="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold transition 
+                                <?php echo $isLoginPage ? 'bg-accent text-white' : 'bg-white border border-accent text-accent hover:bg-accent/10'; ?>">
                             登录
                         </a>
-                    <?php endif; ?>
+                        <a href="<?php $this->options->siteUrl(); ?>register" 
+                        class="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold transition 
+                                <?php echo $isRegisterPage ? 'bg-accent text-white' : 'bg-white border border-accent text-accent hover:bg-accent/10'; ?>">
+                            注册
+                        </a>
+                    </div>
+                <?php endif; ?>
                 </div>
             </div>
 
@@ -132,13 +148,21 @@
 
     <!-- 移动端滑动菜单 -->
     <div id="mobileMenu" class="hidden md:hidden bg-white border-t border-gray-200 px-4 pb-4 pt-2 space-y-3">
-        <a href="<?php $this->options->siteUrl(); ?>" class="block text-dark font-medium">首页</a>
+        <!-- 首页链接 -->
+        <a href="<?php $this->options->siteUrl(); ?>" class="<?php echo get_nav_class('index', null, true); ?>">
+            首页
+        </a>
+        
+        <!-- 独立页面循环（必须在 while 内正确闭合） -->
         <?php $this->widget('Widget_Contents_Page_List')->to($pages); ?>
         <?php while($pages->next()): ?>
-            <a href="<?php $pages->permalink(); ?>" class="block text-gray-600"><?php $pages->title(); ?></a>
+            <a href="<?php $pages->permalink(); ?>" class="<?php echo get_nav_class('page', $pages->slug, true); ?>">
+                <?php $pages->title(); ?>
+            </a>
         <?php endwhile; ?>
+        
+        <!-- 用户状态区域（独立于循环外） -->
         <div class="pt-2 border-t border-gray-100" id="mobileUserState">
-            <!-- 移动端用户状态，与桌面端逻辑同步 -->
             <?php if($this->user->hasLogin()): ?>
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-2">
@@ -147,13 +171,29 @@
                         <span class="text-dark font-medium"><?php $this->user->screenName(); ?></span>
                     </div>
                     <div class="flex gap-3">
-                         <a href="<?php $this->options->siteUrl(); ?>" class="text-accent text-sm">我的主页</a>
+                        <a href="<?php $this->options->siteUrl(); ?>u?uid=<?php echo $this->user->uid; ?>" class="text-accent text-sm">我的主页</a>
                         <a href="<?php $this->options->adminUrl(); ?>" class="text-accent text-sm">后台</a>
                         <a href="<?php $this->options->logoutUrl(); ?>" class="text-gray-500 text-sm">退出</a>
                     </div>
                 </div>
             <?php else: ?>
-                <a href="<?php $this->options->adminUrl('login.php'); ?>" class="inline-block w-full text-center px-4 py-2 rounded-full bg-accent text-white text-sm font-semibold">登录</a>
+                <?php 
+                $currentPath = $this->request->getPathInfo();
+                $isLoginPage = ($currentPath === '/login');
+                $isRegisterPage = ($currentPath === '/register');
+                ?>
+                <div class="flex flex-col space-y-2">
+                    <a href="<?php $this->options->siteUrl(); ?>login" 
+                    class="block text-center px-4 py-2 rounded-full text-sm font-semibold transition 
+                            <?php echo $isLoginPage ? 'bg-accent text-white' : 'bg-white border border-accent text-accent hover:bg-accent/10'; ?>">
+                        登录
+                    </a>
+                    <a href="<?php $this->options->siteUrl(); ?>register" 
+                    class="block text-center px-4 py-2 rounded-full text-sm font-semibold transition 
+                            <?php echo $isRegisterPage ? 'bg-accent text-white' : 'bg-white border border-accent text-accent hover:bg-accent/10'; ?>">
+                        注册
+                    </a>
+                </div>
             <?php endif; ?>
         </div>
     </div>

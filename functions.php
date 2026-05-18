@@ -37,6 +37,37 @@ function themeConfig($form)
     $form->addInput($socialTwitter);
 }
 
+
+/**
+ * 获取导航链接的样式类（支持桌面端和移动端）
+ * @param string $type 页面类型：'index', 'page'
+ * @param string|null $slug 页面缩略名（页面类型时必填）
+ * @param bool $isMobile 是否为移动端（默认false，桌面端）
+ * @return string
+ */
+function get_nav_class($type, $slug = null, $isMobile = false) {
+    $archive = Typecho_Widget::widget('Widget_Archive');
+    $isActive = false;
+    
+    if ($type === 'index') {
+        $isActive = $archive->is('index');
+    } elseif ($type === 'page' && $slug) {
+        $isActive = ($archive->is('page') && $archive->slug == $slug);
+    }
+    
+    if ($isMobile) {
+        // 移动端：左边框高亮（无背景色）
+        return $isActive 
+            ? 'block border-l-4 border-accent pl-3 py-1 text-accent font-medium' 
+            : 'block text-gray-600 hover:text-accent';
+    } else {
+        // 桌面端：下划线高亮
+        return $isActive 
+            ? 'text-dark border-b-2 border-accent pb-0.5 font-medium' 
+            : 'text-gray-600 hover:text-accent';
+    }
+}
+
 /**
  * 获取用户头像（基于邮箱的 Gravatar）
  * @param string $email 用户邮箱
