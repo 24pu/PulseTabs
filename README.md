@@ -16,6 +16,7 @@
 4. 和UserCenter 一起使用 https://github.com/24pu/UserCenter
 如果要单独使用 去掉 post页面的 收藏 点赞相关代码
 和header页面的 用户中心的下来导航
+案例展示:https://24pu.com
 
 ## 自定义
 - Logo 替换：在主题设置中上传
