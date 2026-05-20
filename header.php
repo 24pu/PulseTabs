@@ -167,8 +167,8 @@
                                 <?php echo $page['title']; ?>
                                 <i class="fas fa-chevron-down ml-1 text-xs"></i>
                             </a>
-                            <div class="absolute left-0 mt-1 w-40 bg-white border border-gray-200 rounded-lg shadow-lg py-1 hidden group-hover:block z-50">
-                                <?php foreach ($children[$page['cid']] as $child): ?>
+                            <div class="absolute left-0 top-full w-40 bg-white border border-gray-200 border-t-0 rounded-lg shadow-lg py-1 hidden group-hover:block z-50">
+                            <?php foreach ($children[$page['cid']] as $child): ?>
                                     <a href="<?php echo $child['permalink']; ?>" 
                                     class="block px-4 py-2 text-sm text-gray-700 hover:bg-accent/10 hover:text-accent transition <?php echo get_nav_class('page', $child['slug'], false, $parentSlug); ?>">
                                         <?php echo $child['title']; ?>
