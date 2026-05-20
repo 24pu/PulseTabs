@@ -29,3 +29,9 @@ html { scroll-behavior: smooth; }
     background: #FF5E00 !important;
     color: white !important;
 }
+details > summary {
+    list-style: none;
+}
+details > summary::-webkit-details-marker {
+    display: none;
+}

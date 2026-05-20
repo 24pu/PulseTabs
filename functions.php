@@ -162,25 +162,26 @@ function themeConfig($form)
  * @param bool $isMobile 是否为移动端（默认false，桌面端）
  * @return string
  */
-function get_nav_class($type, $slug = null, $isMobile = false) {
+function get_nav_class($type, $slug = null, $isMobile = false, $parentSlug = null)
+{
     $archive = Typecho_Widget::widget('Widget_Archive');
     $isActive = false;
-    
+
     if ($type === 'index') {
         $isActive = $archive->is('index');
     } elseif ($type === 'page' && $slug) {
-        $isActive = ($archive->is('page') && $archive->slug == $slug);
+        // 当前页面是目标页面，或者当前页面的父级 slug 等于目标 slug
+        $isActive = ($archive->is('page') && $archive->slug == $slug)
+                    || ($parentSlug && $parentSlug == $slug);
     }
-    
+
     if ($isMobile) {
-        // 移动端：左边框高亮（无背景色）
-        return $isActive 
-            ? 'block border-l-4 border-accent pl-3 py-1 text-accent font-medium' 
+        return $isActive
+            ? 'block border-l-4 border-accent pl-3 py-1 text-accent font-medium'
             : 'block text-gray-600 hover:text-accent';
     } else {
-        // 桌面端：下划线高亮
-        return $isActive 
-            ? 'text-dark border-b-2 border-accent pb-0.5 font-medium' 
+        return $isActive
+            ? 'text-dark border-b-2 border-accent pb-0.5 font-medium'
             : 'text-gray-600 hover:text-accent';
     }
 }

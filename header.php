@@ -92,6 +92,44 @@
     <?php if ($this->options->analyticsCode): ?>
         <?php echo $this->options->analyticsCode; ?>
     <?php endif; ?>
+
+    <?php
+    // 获取所有页面并构建父子关系
+    $allPages = [];
+    $pageWidget = $this->widget('Widget_Contents_Page_List');
+    while ($pageWidget->next()) {
+        $allPages[] = [
+            'cid'       => $pageWidget->cid,
+            'slug'      => $pageWidget->slug,
+            'title'     => $pageWidget->title,
+            'permalink' => $pageWidget->permalink,
+            'parent'    => $pageWidget->parent,
+            'order'     => $pageWidget->order
+        ];
+    }
+
+    // 分组
+    $children = [];
+    $topPages = [];
+    foreach ($allPages as $page) {
+        if (empty($page['parent'])) {
+            $topPages[] = $page;
+        } else {
+            $children[$page['parent']][] = $page;
+        }
+    }
+
+    // 按 order 排序顶级页面
+    usort($topPages, function ($a, $b) { return $a['order'] <=> $b['order']; });
+
+    // 当前页面及其父级 slug（用于高亮）
+    $parentSlug = null;
+    if ($this->is('page')) {
+        if ($this->parent) {
+            $parentSlug = $this->parent->slug;
+        }
+    }
+    ?>
 </head>
 <body class="bg-white text-dark">
 
@@ -117,16 +155,36 @@
             <!-- 桌面端导航 + 用户状态（后端实现） -->
             <div class="hidden md:flex items-center space-x-8">
                 <nav class="flex space-x-8">
-                    <a href="<?php $this->options->siteUrl(); ?>" class="<?php echo get_nav_class('index', null, false); ?> transition">
-                        首页
-                    </a>
-                    <?php $this->widget('Widget_Contents_Page_List')->to($pages); ?>
-                    <?php while($pages->next()): ?>
-                        <a href="<?php $pages->permalink(); ?>" class="<?php echo get_nav_class('page', $pages->slug, false); ?> transition">
-                            <?php $pages->title(); ?>
+                <a href="<?php $this->options->siteUrl(); ?>" class="<?php echo get_nav_class('index', null, false); ?> transition">
+                    首页
+                </a>
+                <?php foreach ($topPages as $page): ?>
+                    <?php if (isset($children[$page['cid']])): ?>
+                        <!-- 有子页面的菜单项 -->
+                        <div class="relative group">
+                            <a href="<?php echo $page['permalink']; ?>" 
+                            class="<?php echo get_nav_class('page', $page['slug'], false, $parentSlug); ?> inline-flex items-center transition cursor-pointer">
+                                <?php echo $page['title']; ?>
+                                <i class="fas fa-chevron-down ml-1 text-xs"></i>
+                            </a>
+                            <div class="absolute left-0 mt-1 w-40 bg-white border border-gray-200 rounded-lg shadow-lg py-1 hidden group-hover:block z-50">
+                                <?php foreach ($children[$page['cid']] as $child): ?>
+                                    <a href="<?php echo $child['permalink']; ?>" 
+                                    class="block px-4 py-2 text-sm text-gray-700 hover:bg-accent/10 hover:text-accent transition <?php echo get_nav_class('page', $child['slug'], false, $parentSlug); ?>">
+                                        <?php echo $child['title']; ?>
+                                    </a>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
+                    <?php else: ?>
+                        <!-- 无子页面的普通链接 -->
+                        <a href="<?php echo $page['permalink']; ?>" 
+                        class="<?php echo get_nav_class('page', $page['slug'], false, $parentSlug); ?> transition">
+                            <?php echo $page['title']; ?>
                         </a>
-                    <?php endwhile; ?>
-                </nav>
+                    <?php endif; ?>
+                <?php endforeach; ?>
+            </nav>
 
                 <!-- 用户状态区域（后端渲染） -->
                 <div class="relative" id="userContainer">
@@ -178,12 +236,29 @@
         <a href="<?php $this->options->siteUrl(); ?>" class="<?php echo get_nav_class('index', null, true); ?>">
             首页
         </a>
-        <?php $this->widget('Widget_Contents_Page_List')->to($pages); ?>
-        <?php while($pages->next()): ?>
-            <a href="<?php $pages->permalink(); ?>" class="<?php echo get_nav_class('page', $pages->slug, true); ?>">
-                <?php $pages->title(); ?>
-            </a>
-        <?php endwhile; ?>
+        <?php foreach ($topPages as $page): ?>
+            <?php if (isset($children[$page['cid']])): ?>
+                <details class="group">
+                    <summary class="list-none cursor-pointer flex items-center justify-between <?php echo get_nav_class('page', $page['slug'], true, $parentSlug); ?>">
+                        <?php echo $page['title']; ?>
+                        <i class="fas fa-chevron-down ml-1 text-xs transition-transform group-open:rotate-180"></i>
+                    </summary>
+                    <div class="ml-4 space-y-1 mt-1">
+                        <?php foreach ($children[$page['cid']] as $child): ?>
+                            <a href="<?php echo $child['permalink']; ?>" 
+                            class="block <?php echo get_nav_class('page', $child['slug'], true, $parentSlug); ?>">
+                                <?php echo $child['title']; ?>
+                            </a>
+                        <?php endforeach; ?>
+                    </div>
+                </details>
+            <?php else: ?>
+                <a href="<?php echo $page['permalink']; ?>" 
+                class="<?php echo get_nav_class('page', $page['slug'], true, $parentSlug); ?>">
+                    <?php echo $page['title']; ?>
+                </a>
+            <?php endif; ?>
+        <?php endforeach; ?>
         <div class="pt-2 border-t border-gray-100" id="mobileUserState">
             <?php if($this->user->hasLogin()): ?>
                 <div class="flex items-center justify-between">
