@@ -193,7 +193,7 @@
                         <span class="text-dark font-medium"><?php $this->user->screenName(); ?></span>
                     </div>
                     <div class="flex gap-3">
-                        <a href="<?php $this->options->siteUrl(); ?>u?uid=<?php echo $this->user->uid; ?>" class="text-accent text-sm">我的主页</a>
+                        <a href="<?php $this->options->siteUrl(); ?>dashboard" class="text-accent text-sm">用户中心</a>
                         <a href="<?php $this->options->adminUrl(); ?>" class="text-accent text-sm">后台</a>
                         <a href="<?php $this->options->logoutUrl(); ?>" class="text-gray-500 text-sm">退出</a>
                     </div>
